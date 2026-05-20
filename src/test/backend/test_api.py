@@ -149,6 +149,52 @@ def test_import_rejects_unknown_school_board(api_client) -> None:
     assert response.json == {"error": "School board must be OCDSB, OCSB, or both."}
 
 
+def test_import_rejects_non_realtor_urls(api_client) -> None:
+    client, _ = api_client
+
+    response = client.post(
+        "/api/import",
+        json={"urls": "https://example.com/not-a-listing"},
+    )
+
+    assert response.status_code == 400
+    assert response.json == {
+        "error": "Only Realtor.ca listing URLs are allowed.",
+        "invalid_urls": ["https://example.com/not-a-listing"],
+    }
+
+
+def test_import_rejects_empty_url_list(api_client) -> None:
+    client, _ = api_client
+
+    response = client.post("/api/import", json={"urls": "   "})
+
+    assert response.status_code == 400
+    assert response.json == {"error": "At least one Realtor.ca listing URL is required."}
+
+
+def test_write_routes_reject_untrusted_browser_origin(api_client) -> None:
+    client, _ = api_client
+
+    response = client.post(
+        "/api/settings/fee",
+        json={"green_max_fee": 400, "amber_max_fee": 600},
+        headers={"Origin": "https://evil.example"},
+    )
+
+    assert response.status_code == 403
+    assert response.json == {"error": "Request origin is not allowed."}
+
+
+def test_cors_does_not_allow_untrusted_origin(api_client) -> None:
+    client, _ = api_client
+
+    response = client.get("/api/health", headers={"Origin": "https://evil.example"})
+
+    assert response.status_code == 200
+    assert "Access-Control-Allow-Origin" not in response.headers
+
+
 def test_delete_listing_normalizes_url_before_delete(api_client) -> None:
     client, conn = api_client
     url = "https://www.realtor.ca/real-estate/1/test-listing"

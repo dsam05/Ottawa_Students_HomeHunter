@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -11,7 +12,7 @@ try:
     from .background_worker import enqueue_import, get_job, update_job
     from .ocdsb_lookup import enrich_listing_with_ocdsb, needs_school_enrichment
     from .ocsb_lookup import enrich_listing_with_ocsb
-    from .realtor_lookup import enrich_listing_with_realtor, needs_realtor_enrichment
+    from .realtor_lookup import enrich_listing_with_realtor, is_allowed_realtor_url, needs_realtor_enrichment
     from .safety_lookup import enrich_listing_with_safety, needs_safety_enrichment
     from .storage import (
         apply_distance_preference_to_listing,
@@ -31,7 +32,7 @@ except ImportError:  # pragma: no cover
     from background_worker import enqueue_import, get_job, update_job
     from ocdsb_lookup import enrich_listing_with_ocdsb, needs_school_enrichment
     from ocsb_lookup import enrich_listing_with_ocsb
-    from realtor_lookup import enrich_listing_with_realtor, needs_realtor_enrichment
+    from realtor_lookup import enrich_listing_with_realtor, is_allowed_realtor_url, needs_realtor_enrichment
     from safety_lookup import enrich_listing_with_safety, needs_safety_enrichment
     from storage import (
         apply_distance_preference_to_listing,
@@ -52,6 +53,13 @@ except ImportError:  # pragma: no cover
 ROOT = Path(__file__).resolve().parents[3]
 FRONTEND_DIR = ROOT / "src" / "main" / "frontend"
 DIST_DIR = FRONTEND_DIR / "dist"
+MAX_IMPORT_URLS = 100
+LOCAL_ORIGINS = {
+    "http://127.0.0.1:5001",
+    "http://localhost:5001",
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+}
 
 SORTS = {
     "school_proximity": "school_distance_km ASC NULLS LAST, price ASC NULLS LAST",
@@ -68,7 +76,51 @@ SORTS = {
 
 
 app = Flask(__name__, static_folder=str(DIST_DIR if DIST_DIR.exists() else FRONTEND_DIR), static_url_path="")
-CORS(app)
+app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
+CORS(app, resources={r"/api/*": {"origins": sorted(LOCAL_ORIGINS)}})
+
+
+def origin_is_allowed(value: str | None) -> bool:
+    if not value:
+        return True
+    return value.rstrip("/") in LOCAL_ORIGINS
+
+
+@app.before_request
+def protect_local_write_routes() -> Any:
+    if request.method in {"GET", "HEAD", "OPTIONS"}:
+        return None
+    origin = request.headers.get("Origin")
+    referer = request.headers.get("Referer")
+    if origin and not origin_is_allowed(origin):
+        return jsonify({"error": "Request origin is not allowed."}), 403
+    if not origin and referer:
+        referer_origin = re.match(r"^https?://[^/]+", referer)
+        if referer_origin and not origin_is_allowed(referer_origin.group(0)):
+            return jsonify({"error": "Request origin is not allowed."}), 403
+    return None
+
+
+def parse_import_urls(raw: Any) -> tuple[list[str], list[str]]:
+    if isinstance(raw, list):
+        pieces = [str(item) for item in raw]
+    else:
+        pieces = re.split(r"[\n, ]+", str(raw or ""))
+    urls = []
+    invalid = []
+    seen = set()
+    for piece in pieces:
+        value = piece.strip()
+        if not value:
+            continue
+        normalized = normalize_url(value)
+        if not is_allowed_realtor_url(normalized):
+            invalid.append(value)
+            continue
+        if normalized not in seen:
+            urls.append(normalized)
+            seen.add(normalized)
+    return urls, invalid
 
 
 def enrich_listing_with_school_boards(listing: dict[str, Any], school_board: str) -> dict[str, Any]:
@@ -101,7 +153,7 @@ def process_import_job(job_id: str, urls: list[str], school_board: str = "both")
     skipped = 0
     for index, url in enumerate(urls, start=1):
         update_job(job_id, processed=index - 1, message=f"Processing {index} of {len(urls)}")
-        if not url.startswith("https://www.realtor.ca/real-estate/"):
+        if not is_allowed_realtor_url(url):
             skipped += 1
             update_job(job_id, skipped=skipped, processed=index)
             continue
@@ -200,7 +252,13 @@ def import_urls() -> Any:
     school_board = str(payload.get("school_board") or "both").lower()
     if school_board not in {"ocdsb", "ocsb", "both"}:
         return jsonify({"error": "School board must be OCDSB, OCSB, or both."}), 400
-    urls = [normalize_url(line) for line in re.split(r"[\n, ]+", raw) if line.strip()]
+    urls, invalid = parse_import_urls(raw)
+    if invalid:
+        return jsonify({"error": "Only Realtor.ca listing URLs are allowed.", "invalid_urls": invalid[:10]}), 400
+    if not urls:
+        return jsonify({"error": "At least one Realtor.ca listing URL is required."}), 400
+    if len(urls) > MAX_IMPORT_URLS:
+        return jsonify({"error": f"Import is limited to {MAX_IMPORT_URLS} URLs at a time."}), 400
     job = enqueue_import(process_import_job, urls, school_board)
     return jsonify(job), 202
 
@@ -264,4 +322,5 @@ if __name__ == "__main__":
     with connect() as conn:
         if conn.execute("SELECT COUNT(*) FROM listings").fetchone()[0] == 0:
             seed_initial_listings(conn)
-    app.run(host="127.0.0.1", port=5001, debug=True)
+    port = int(os.environ.get("PORT", "5001"))
+    app.run(host="127.0.0.1", port=port, debug=False)

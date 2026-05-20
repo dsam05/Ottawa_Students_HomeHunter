@@ -3,7 +3,6 @@ from __future__ import annotations
 import html
 import json
 import re
-import ssl
 import urllib.parse
 import urllib.request
 from typing import Any
@@ -11,6 +10,29 @@ from typing import Any
 
 DETAILS_URL = "https://api2.realtor.ca/Listing.svc/PropertyDetails"
 REALTOR_URL_PREFIX = "https://www.realtor.ca/real-estate/"
+ALLOWED_FETCH_HOSTS = {"api2.realtor.ca", "www.realtor.ca", "realtor.ca"}
+ALLOWED_LISTING_HOSTS = {"www.realtor.ca", "realtor.ca"}
+
+
+def is_allowed_realtor_url(url: str) -> bool:
+    parsed = urllib.parse.urlparse(str(url or "").strip())
+    return (
+        parsed.scheme == "https"
+        and parsed.hostname in ALLOWED_LISTING_HOSTS
+        and re.match(r"^/real-estate/\d+/", parsed.path or "") is not None
+        and not parsed.username
+        and not parsed.password
+    )
+
+
+def is_allowed_fetch_url(url: str) -> bool:
+    parsed = urllib.parse.urlparse(str(url or "").strip())
+    return (
+        parsed.scheme == "https"
+        and parsed.hostname in ALLOWED_FETCH_HOSTS
+        and not parsed.username
+        and not parsed.password
+    )
 
 
 def append_note(existing: Any, note: str) -> str:
@@ -35,6 +57,8 @@ def listing_id_from_url(url: str) -> str | None:
 
 
 def request_text(url: str) -> str:
+    if not is_allowed_fetch_url(url):
+        raise ValueError("URL host is not allowed for listing enrichment.")
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
         "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
@@ -43,7 +67,7 @@ def request_text(url: str) -> str:
         "Referer": "https://www.realtor.ca/",
     }
     request_obj = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(request_obj, timeout=25, context=ssl._create_unverified_context()) as response:
+    with urllib.request.urlopen(request_obj, timeout=25) as response:
         return response.read().decode("utf-8", errors="replace")
 
 
@@ -158,6 +182,8 @@ def classify_basement(value: Any) -> str | None:
 
 
 def fetch_realtor_data(url: str) -> dict[str, Any] | None:
+    if not is_allowed_realtor_url(url):
+        return None
     property_id = listing_id_from_url(url)
     candidates = []
     if property_id:
@@ -199,7 +225,7 @@ def needs_realtor_enrichment(listing: dict[str, Any]) -> bool:
 
 def enrich_listing_with_realtor(listing: dict[str, Any]) -> dict[str, Any]:
     url = str(listing.get("url") or "")
-    if not url.startswith(REALTOR_URL_PREFIX):
+    if not is_allowed_realtor_url(url):
         return listing
     data = fetch_realtor_data(url)
     if not data:

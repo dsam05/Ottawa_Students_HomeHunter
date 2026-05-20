@@ -23,3 +23,7 @@ todolist.txt
 
 # OS/editor noise
 .DS_Store
+
+# IDE/project files
+.idea/
+*.iml
