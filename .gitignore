@@ -1,0 +1,25 @@
+# Local property data and generated outputs
+app_data/
+outputs/
+*.duckdb
+*.xlsx
+
+# Python environments and caches
+.venv/
+.python_deps/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*$py.class
+
+# Node dependencies and build output
+node_modules/
+dist/
+src/main/frontend/dist/
+
+# Local tool/runtime caches
+.tools/
+todolist.txt
+
+# OS/editor noise
+.DS_Store
