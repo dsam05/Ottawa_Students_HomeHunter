@@ -84,6 +84,10 @@ The code architecture, project tree, data model, API map, and school-locator ext
 technical_documentation.md
 ```
 
+## Walkthrough
+
+The repository includes a 60-second GIF-style walkthrough at `screenshots/08-60-second-walkthrough.gif`. It uses abstracted UI frames so it is safe to share publicly and does not expose private listing details.
+
 ## Screenshots
 
 The repository includes a small screenshot set under `screenshots/`:
@@ -95,6 +99,7 @@ The repository includes a small screenshot set under `screenshots/`:
 - `05-listing-cards-headers-blurred.png`: listing cards with only the header address/title text blurred
 - `06-listing-card-detail-headers-blurred.png`: scrolled listing card view with only the header address/title text blurred
 - `07-school-board-filter-dropdown.png`: school-board filter checkbox dropdown
+- `08-60-second-walkthrough.gif`: one-minute GIF-style walkthrough for sharing the project
 
 ## How To Use It
 

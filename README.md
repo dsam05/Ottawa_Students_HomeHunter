@@ -8,6 +8,10 @@ Imports look for both OCDSB public and OCSB Catholic schools by default. School-
 
 For first-time setup instructions, read [install.md](install.md). For the product walkthrough and design story, read [documentation.md](documentation.md). For architecture, data model, API details, project tree, and extension notes, read [technical_documentation.md](technical_documentation.md).
 
+## Walkthrough
+
+![60-second walkthrough](screenshots/08-60-second-walkthrough.gif)
+
 ## Screenshots
 
 Representative app screenshots are kept in [screenshots](screenshots):
@@ -19,6 +23,7 @@ Representative app screenshots are kept in [screenshots](screenshots):
 - [Listing cards with blurred headers](screenshots/05-listing-cards-headers-blurred.png)
 - [Listing detail area with blurred headers](screenshots/06-listing-card-detail-headers-blurred.png)
 - [School-board filter dropdown](screenshots/07-school-board-filter-dropdown.png)
+- [60-second GIF walkthrough](screenshots/08-60-second-walkthrough.gif)
 
 ## Run
 

@@ -55,7 +55,8 @@ Ottawa_Students_HomeHunter/
 │   ├── 04-condo-fee-slider.png (condo fee slider screenshot)
 │   ├── 05-listing-cards-headers-blurred.png (listing cards screenshot with header text blurred)
 │   ├── 06-listing-card-detail-headers-blurred.png (listing detail screenshot with header text blurred)
-│   └── 07-school-board-filter-dropdown.png (school-board filter dropdown screenshot)
+│   ├── 07-school-board-filter-dropdown.png (school-board filter dropdown screenshot)
+│   └── 08-60-second-walkthrough.gif (shareable GIF-style walkthrough with abstracted UI frames)
 ├── src/
 │   ├── main/
 │   │   ├── backend/
