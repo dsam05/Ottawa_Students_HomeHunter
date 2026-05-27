@@ -205,7 +205,7 @@ function ListingCard({ listing, onDelete, feeSettings, schoolBoardFilter }) {
       h("span", { className: `score-pill ${parkingClass(listing.parking_type)}` }, h(Car, { size: 14 }), `Garage: ${listing.parking_type || "Parking pending"}`),
       h("span", { className: `score-pill ${basementClass(listing.basement)}` }, `Basement: ${listing.basement || "No information"}`),
       h("span", { className: `fee-pill ${feeClass(listing.maintenance_fee, feeSettings)}` }, `Condo fee: ${listing.maintenance_fee ? `${money(listing.maintenance_fee)}/mo` : "No fee info"}`),
-      h("span", { className: `score-pill ${recommendationClass(listing.overall_verdict)}` }, `My recommendation: ${listing.overall_verdict || "Recommendation pending"}`),
+      h("span", { className: `score-pill ${recommendationClass(listing.overall_verdict)}` }, `Recommendation: ${listing.overall_verdict || "Recommendation pending"}`),
     ),
     listing.safety_notes
       ? h("p", { className: "safety-source" }, `Safety source: ${listing.safety_notes}`)

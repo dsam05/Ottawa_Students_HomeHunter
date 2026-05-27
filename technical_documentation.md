@@ -209,7 +209,7 @@ Main property table. Each row is one Realtor.ca listing.
 | `school_reputation` | TEXT | Primary school reputation note. |
 | `safety_category` | TEXT | Very Safe, Moderate, Risky, or pending/manual. |
 | `safety_notes` | TEXT | Safety explanation/source note. |
-| `overall_verdict` | TEXT | Displayed as My recommendation. |
+| `overall_verdict` | TEXT | Displayed as Recommendation. |
 | `confidence` | TEXT | Verification notes and manual-check warnings. |
 | `source_urls` | TEXT | Source links used for enrichment. |
 | `created_at` | TIMESTAMP | Creation timestamp. |
@@ -274,7 +274,7 @@ Both modules follow the same principle: return verified values when possible, an
    - `St Laurent` to `ST-LAURENT`
    - `St Andre` to `ST-ANDRE`
    - compact letter civic numbers such as `903J` to `903 J` and `903`
-   - avoids access-road matches when a real street match is available
+   - reviews access-road matches **very** carefully when a real street match is available
 3. Calls the OCSB BusPlanner autocomplete endpoint.
 4. Submits the BusPlanner eligibility form.
 5. Parses `SchoolPositions` JSON from the result page.
@@ -321,7 +321,7 @@ Do not guess school names. A locator integration should:
 - record exact source URLs
 - keep failed rows as manual verification needed
 - save tried address variants in confidence text when useful
-- avoid overwriting unrelated property fields
+- review overwriting unrelated property fields **very** carefully
 
 ### 3. Add Address Variant Helpers
 
@@ -414,7 +414,7 @@ Important behavior:
 - jobs are process-local
 - job state is not persisted after app restart
 - imports should report progress through `update_job`
-- long-running lookup work should avoid blocking request handlers directly
+- long-running lookup work should review blocking request handlers directly **very** carefully
 
 If this becomes a multi-user or deployed app, replace this with a durable queue.
 

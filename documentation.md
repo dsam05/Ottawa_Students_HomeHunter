@@ -256,7 +256,7 @@ You will see:
 - Garage/parking
 - Basement
 - Condo fee
-- My recommendation
+- Recommendation
 - Safety source notes
 - Manual verification notes
 
@@ -268,7 +268,7 @@ Safety ranking: Very Safe
 Garage: Underground parking
 Basement: Finished
 Condo fee: $455/mo
-My recommendation: Review carefully
+Recommendation: Review carefully
 ```
 
 The point is to remove interpretation friction.
@@ -281,7 +281,7 @@ flowchart TB
     Card --> D["School Proximity Badge"]
     Card --> E["Safety Ranking Badge"]
     Card --> F["Garage / Basement / Condo Fee"]
-    Card --> G["My Recommendation"]
+    Card --> G["Recommendation"]
     Card --> H["Notes + Manual Checks"]
 ```
 
@@ -366,9 +366,9 @@ Anything else is amber.
 - Amber: consider/maybe
 - Red: pending or weak signal
 
-## My Recommendation: What It Means
+## Recommendation: What It Means
 
-The **My recommendation** label is the app's practical summary of whether a listing deserves more attention.
+The **Recommendation** label is the app's practical summary of whether a listing deserves more attention.
 
 It is not meant to replace judgment. It is meant to stop every property from feeling like a fresh debate.
 
@@ -402,7 +402,7 @@ flowchart TD
     A --> G["Price"]
     A --> H["Manual checks"]
 
-    B --> R["My recommendation"]
+    B --> R["Recommendation"]
     C --> R
     D --> R
     E --> R
@@ -462,7 +462,7 @@ flowchart LR
 
 In the current app, recommendation values can come from saved listing data or newly enriched listing signals. The app displays and color-codes them, and it uses the other live signals around them to help you decide whether the recommendation still feels right.
 
-That means **My recommendation** should be treated as a smart shortlist cue, not a final verdict.
+That means **Recommendation** should be treated as a smart shortlist cue, not a final verdict.
 
 The strongest workflow is:
 
